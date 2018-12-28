@@ -18,22 +18,32 @@ public class WeatherRequestHandler implements RequestHandler<RequestClass, Respo
     public ResponseClass handleRequest(RequestClass request, Context context) {
         ResponseClass response = new ResponseClass();
 
+        response.setResponse(getCurrentWeather());
+
+        return response;
+    }
+
+    private static String getCurrentWeather () {
+        String weatherHtml = getHtmlFromUrl(System.getenv("WEATHER_API_URL"));
+
+        // TODO: parse HTML to get description, temp, humidity, and wind
+
+        return weatherHtml;
+    }
+
+    private static String getHtmlFromUrl (String urlString) {
         try {
-            URL url = new URL("http://www.example.com/");
+            URL url = new URL(urlString);
             URLConnection connection = url.openConnection();
-            InputStream in = connection.getInputStream();
+            InputStream inputStream = connection.getInputStream();
 
             String encoding = connection.getContentEncoding();
             encoding = encoding == null ? "UTF-8" : encoding;
-
-            String body = IOUtils.toString(in, encoding);
-            response.setResponse(body);
+            return IOUtils.toString(inputStream, encoding);
         } catch (MalformedURLException badUrlException) {
-            response.setResponse("Malformed URL: " + badUrlException.toString());
+            return "Malformed URL: " + badUrlException.toString();
         } catch (IOException ioException) {
-            response.setResponse("IOException: " + ioException.toString());
+            return "IOException: " + ioException.toString();
         }
-
-        return response;
     }
 }
