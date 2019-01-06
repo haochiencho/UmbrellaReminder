@@ -24,11 +24,14 @@ public class WeatherRequestHandler implements RequestHandler<RequestClass, Respo
     }
 
     private static String getCurrentWeather () {
-        String weatherHtml = getHtmlFromUrl(System.getenv("WEATHER_API_URL"));
+
+
+        String weatherAPIKey = System.getenv("WEATHER_API_KEY");
+        String cityId = System.getenv("SEATTLE_CITY_ID");
 
         // TODO: parse HTML to get description, temp, humidity, and wind
 
-        return weatherHtml;
+        return getWeatherJson(cityId, weatherAPIKey);
     }
 
     private static String getHtmlFromUrl (String urlString) {
@@ -45,5 +48,13 @@ public class WeatherRequestHandler implements RequestHandler<RequestClass, Respo
         } catch (IOException ioException) {
             return "IOException: " + ioException.toString();
         }
+    }
+
+    private static String getWeatherJson (String cityId, String weatherAPIKey) {
+
+        String weatherApiUrl = "http://api.openweathermap.org/data/2.5/weather?id=" + cityId + "&appid=" + weatherAPIKey;
+        String weatherJson = getHtmlFromUrl(weatherApiUrl);
+
+        return weatherJson;
     }
 }
