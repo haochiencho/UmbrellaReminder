@@ -22,9 +22,27 @@ public class WeatherRequestHandler implements RequestHandler<RequestClass, Respo
 
         JsonNode weatherJson = getCurrentWeather();
 
-        response.setResponse(getValueFromJsonNode(weatherJson, "main"));
+        response.setResponse(formulateMessage(weatherJson));
 
         return response;
+    }
+
+    private static String formulateMessage (JsonNode weather) {
+        String briefDescription = getValueFromJsonNode(weather, "main");
+        String description = getValueFromJsonNode(weather, "description");
+        String temp = convertKelvinFahrenheit(getValueFromJsonNode(weather, "temp"));
+        String max_temp = convertKelvinFahrenheit(getValueFromJsonNode(weather, "temp_max"));
+        String min_temp = convertKelvinFahrenheit(getValueFromJsonNode(weather, "temp_min"));
+        String humidity = getValueFromJsonNode(weather, "humidity");
+        String wind_speed = getValueFromJsonNode(weather, "speed");
+
+        return "Daily Forecast: " + briefDescription + ", current temp " + temp + ", high " + max_temp + ", low "
+                + min_temp + ", humidity " + humidity + ", wind speed " + wind_speed + ", overall: " + description;
+
+    }
+
+    private static String convertKelvinFahrenheit (String kelvin) {
+        return Double.toString(Math.round(((Float.parseFloat(kelvin) - 273.15) * 1.8 + 32.0)));
     }
 
     private static JsonNode getCurrentWeather () {
