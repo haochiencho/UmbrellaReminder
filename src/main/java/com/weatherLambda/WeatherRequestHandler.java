@@ -2,6 +2,8 @@ package com.weatherLambda;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -18,20 +20,32 @@ public class WeatherRequestHandler implements RequestHandler<RequestClass, Respo
     public ResponseClass handleRequest(RequestClass request, Context context) {
         ResponseClass response = new ResponseClass();
 
-        response.setResponse(getCurrentWeather());
+        JsonNode weatherJson = getCurrentWeather();
+
+        response.setResponse(getValueFromJsonNode(weatherJson, "main"));
 
         return response;
     }
 
-    private static String getCurrentWeather () {
-
+    private static JsonNode getCurrentWeather () {
 
         String weatherAPIKey = System.getenv("WEATHER_API_KEY");
         String cityId = System.getenv("SEATTLE_CITY_ID");
 
-        // TODO: parse HTML to get description, temp, humidity, and wind
+        String weatherJsonString = getWeatherJson(cityId, weatherAPIKey);
 
-        return getWeatherJson(cityId, weatherAPIKey);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            System.out.println(weatherJsonString);
+            JsonNode jsonNode = mapper.readTree(weatherJsonString);
+            System.out.println("norm: " + jsonNode.asText());
+            System.out.println("special: " + jsonNode.get("weather").asText());
+
+            return jsonNode;
+        } catch (IOException ioException) {
+            // TODO: log exceptions
+            return null;
+        }
     }
 
     private static String getHtmlFromUrl (String urlString) {
@@ -56,5 +70,9 @@ public class WeatherRequestHandler implements RequestHandler<RequestClass, Respo
         String weatherJson = getHtmlFromUrl(weatherApiUrl);
 
         return weatherJson;
+    }
+
+    private static String getValueFromJsonNode (JsonNode jsonNode, String field) {
+        return jsonNode.findValues(field).get(0).asText();
     }
 }
