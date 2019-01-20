@@ -22,7 +22,12 @@ public class WeatherRequestHandler implements RequestHandler<RequestClass, Respo
 
         JsonNode weatherJson = getCurrentWeather();
 
-        response.setResponse(formulateMessage(weatherJson));
+        String weatherMessage = formulateMessage(weatherJson);
+
+        SNSClient snsClient = new SNSClient();
+        snsClient.publish(weatherMessage);
+
+        response.setResponse(weatherMessage);
 
         return response;
     }
